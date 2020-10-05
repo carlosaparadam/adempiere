@@ -38,8 +38,8 @@ jobs:
             install/build/*.zip
             install/build/*.zip.MD5
             !install/build/Adempiere
-            !install/build/Adempiere_393LTS.tar.gz
-            !install/build/Adempiere_393LTS.tar.gz.MD5
+            !install/build/*.tar.gz
+            !install/build/*.tar.gz.MD5
       - name: create-tar-artifact
         uses: actions/upload-artifact@v2
         with:
@@ -48,8 +48,8 @@ jobs:
             install/build/*.tar.gz
             install/build/*.tar.gz.MD5
             !install/build/Adempiere
-            !install/build/Adempiere_393LTS.zip
-            !install/build/Adempiere_393LTS.zip.MD5
+            !install/build/*.zip
+            !install/build/*.zip.MD5
       
          
           
