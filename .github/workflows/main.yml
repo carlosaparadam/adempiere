@@ -23,18 +23,29 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
+      # Build ADempiere with ant
       - name: Build Adempiere ...
         run: |
            cd utils_dev
            ant complete
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-          pwd
-          ls
-          echo test, and deployed your project.
+      # Create Artifact for Download
+      - name: create-artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ADempiere-ZIP
+          path: |
+            install/build
+            !install/build/adempiere
+            !install/build/Adempiere_393LTS.tar.gz
+            !install/build/Adempiere_393LTS.tar.gz.MD5
+        with:
+          name: ADempiere-TAR.GZ
+          path: |
+            install/build
+            !install/build/adempiere
+            !install/build/Adempiere_393LTS.zip
+            !install/build/Adempiere_393LTS.zip.MD5
+      
+         
           
