@@ -30,7 +30,7 @@ jobs:
            ant complete
 
       # Create Artifact for Download
-      - name: create-artifact
+      - name: create-zip-artifact
         uses: actions/upload-artifact@v2
         with:
           name: ADempiere-ZIP
@@ -39,6 +39,8 @@ jobs:
             !install/build/adempiere
             !install/build/Adempiere_393LTS.tar.gz
             !install/build/Adempiere_393LTS.tar.gz.MD5
+      - name: create-tar-artifact
+        uses: actions/upload-artifact@v2
         with:
           name: ADempiere-TAR.GZ
           path: |
