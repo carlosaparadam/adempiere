@@ -1,5 +1,4 @@
 # This is a basic workflow to help you get started with Actions
-
 name: ADempiere
 
 # Controls when the action will run. Triggers the workflow on push or pull request
@@ -26,6 +25,10 @@ jobs:
       # Build ADempiere with ant
       - name: Build Adempiere ...
         run: |
+           echo $GITHUB_REF
+           echo $GITHUB_HEAD_REF
+           echo $GITHUB_BASE_REF
+           echo ${{ github.ref }}
            cd utils_dev
            ant complete
 
@@ -50,6 +53,20 @@ jobs:
             !install/build/Adempiere
             !install/build/*.zip
             !install/build/*.zip.MD5
-      
-         
-          
+      # Login in Dockerhub
+#      - name: Login to DockerHub
+#        uses: docker/login-action@v1 
+#        with:
+#          username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # Build and Push Docker Images
+#      - name: Build and push
+#        uses: docker/build-push-action@v2
+#        with:
+#          context: /docker/
+#          file: ./Dockerfile
+#          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
+#          push: true
+#          tags: |
+#            carlosaparadam/adempiere:latest
+#            carlosaparadam/adempiere:1.0.0
