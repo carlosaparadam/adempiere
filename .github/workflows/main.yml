@@ -36,7 +36,7 @@ jobs:
           name: ADempiere-ZIP
           path: |
             install/build
-            !install/build/adempiere
+            !install/build/Adempiere
             !install/build/Adempiere_393LTS.tar.gz
             !install/build/Adempiere_393LTS.tar.gz.MD5
       - name: create-tar-artifact
@@ -45,7 +45,7 @@ jobs:
           name: ADempiere-TAR.GZ
           path: |
             install/build
-            !install/build/adempiere
+            !install/build/Adempiere
             !install/build/Adempiere_393LTS.zip
             !install/build/Adempiere_393LTS.zip.MD5
       
