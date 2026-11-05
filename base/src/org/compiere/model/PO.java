@@ -2500,7 +2500,8 @@ public abstract class PO
 	 */
 	protected boolean saveUpdate()
 	{
-		MigrationSQLBuilder migrationBuilder = new MigrationSQLBuilder(this, p_info);
+		boolean migrationLogging = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+		MigrationSQLBuilder migrationBuilder = migrationLogging ? new MigrationSQLBuilder(this, p_info) : null;
 		String where = get_WhereClause(true);
 		//
 		boolean changes = false;
@@ -2563,9 +2564,10 @@ public abstract class PO
 					int AD_User_ID = Env.getContextAsInt(p_ctx, "#AD_User_ID");
 					set_ValueNoCheck("UpdatedBy", Integer.valueOf(AD_User_ID));
 					sql.append("UpdatedBy=").append(AD_User_ID);
-					migrationSql.append("UpdatedBy=").append(
-							migrationBuilder.getSQLValue(p_info.getColumnIndex("UpdatedBy"),
-									Integer.valueOf(AD_User_ID)));
+					if (migrationLogging)
+						migrationSql.append("UpdatedBy=").append(
+								migrationBuilder.getSQLValue(p_info.getColumnIndex("UpdatedBy"),
+										Integer.valueOf(AD_User_ID)));
 					changes = true;
 					updatedBy = true;
 				}
@@ -2599,8 +2601,9 @@ public abstract class PO
 			}
 			changes = true;
 			sql.append(columnName).append("=");
-			migrationSql.append(columnName).append("=")
-				.append(migrationBuilder.getUpdateSQLValue(i, value));
+			if (migrationLogging)
+				migrationSql.append(columnName).append("=")
+					.append(migrationBuilder.getUpdateSQLValue(i, value));
 
 			//  values
 			if (value == Null.NULL)
@@ -2670,7 +2673,8 @@ public abstract class PO
 				String value = (String)m_custom.get(column);
 				int index = p_info.getColumnIndex(column);
 				sql.append(column).append("=").append(encrypt(index,value));
-				migrationSql.append(column).append("=").append(encrypt(index,value));
+				if (migrationLogging)
+					migrationSql.append(column).append("=").append(encrypt(index,value));
 			}
 			m_custom = null;
 		}
@@ -2694,12 +2698,14 @@ public abstract class PO
 				int AD_User_ID = Env.getContextAsInt(p_ctx, "#AD_User_ID");
 				set_ValueNoCheck("UpdatedBy", Integer.valueOf(AD_User_ID));
 				sql.append(",UpdatedBy=").append(AD_User_ID);
-				migrationSql.append(",UpdatedBy=").append(
-						migrationBuilder.getSQLValue(p_info.getColumnIndex("UpdatedBy"),
-								Integer.valueOf(AD_User_ID)));
+				if (migrationLogging)
+					migrationSql.append(",UpdatedBy=").append(
+							migrationBuilder.getSQLValue(p_info.getColumnIndex("UpdatedBy"),
+									Integer.valueOf(AD_User_ID)));
 			}
 			sql.append(" WHERE ").append(where);
-			migrationSql.append(" WHERE ").append(migrationBuilder.getWhereClause());
+			if (migrationLogging)
+				migrationSql.append(" WHERE ").append(migrationBuilder.getWhereClause());
 			/** @todo status locking goes here */
 
 			log.finest(sql.toString());
@@ -2744,7 +2750,8 @@ public abstract class PO
 	 */
 	private boolean saveNew()
 	{
-		MigrationSQLBuilder migrationBuilder = new MigrationSQLBuilder(this, p_info);
+		boolean migrationLogging = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+		MigrationSQLBuilder migrationBuilder = migrationLogging ? new MigrationSQLBuilder(this, p_info) : null;
 		//  Set ID for single key - Multi-Key values need explicitly be set previously
 		if (m_IDs.length == 1 && p_info.hasKeyColumn()
 			&& m_KeyColumns[0].endsWith("_ID")
@@ -2869,9 +2876,11 @@ public abstract class PO
 			Class<?> c = p_info.getColumnClass(i);
 			try
 			{
-				boolean customPrimaryKey = migrationBuilder.isCustomPrimaryKey(i, value);
-				migrationValues.append(customPrimaryKey
-						? migrationBuilder.getInsertKeySQL() : migrationBuilder.getSQLValue(i, value));
+				if (migrationLogging) {
+					boolean customPrimaryKey = migrationBuilder.isCustomPrimaryKey(i, value);
+					migrationValues.append(customPrimaryKey
+							? migrationBuilder.getInsertKeySQL() : migrationBuilder.getSQLValue(i, value));
+				}
 				if (c == Object.class) //  may have need to deal with null values differently
 					sqlValues.append (saveNewSpecial (value, i));
 				else if (value == null || value.equals (Null.NULL))
@@ -3185,8 +3194,9 @@ public abstract class PO
 			.append(p_info.getTableName())
 			.append(" WHERE ")
 			.append(get_WhereClause(true));
-		String migrationSql = "DELETE FROM " + p_info.getTableName()
-				+ " WHERE " + new MigrationSQLBuilder(this, p_info).getWhereClause();
+		String migrationSql = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
+				? "DELETE FROM " + p_info.getTableName()
+					+ " WHERE " + new MigrationSQLBuilder(this, p_info).getWhereClause() : null;
 		int no = 0;
 		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
 			MigrationStatementContext.set(migrationSql);

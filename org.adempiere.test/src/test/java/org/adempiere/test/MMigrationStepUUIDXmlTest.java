@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -51,7 +52,8 @@ class MMigrationStepUUIDXmlTest implements UnitTestTag {
 		MMigrationStep step = migrationStep("AD_Field_Trl", 1000001,
 				"record-uuid",
 				migrationData("AD_Field_ID", 100, "@UUID@AD_Field:parent-uuid"),
-				migrationData("AD_Language", 101, "es_MX"));
+				migrationData("AD_Language", 101, "es_MX"),
+				migrationData("UUID", 102, "record-uuid"));
 
 		Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element xml = (Element) step.toXmlNode(document);
@@ -59,7 +61,7 @@ class MMigrationStepUUIDXmlTest implements UnitTestTag {
 		NodeList data = po.getElementsByTagName("Data");
 
 		assertEquals("record-uuid", po.getAttribute("Record_UUID"));
-		assertEquals(2, data.getLength());
+		assertEquals(3, data.getLength());
 		Element parentKey = (Element) data.item(0);
 		assertEquals("AD_Field_ID", parentKey.getAttribute("Column"));
 		assertEquals("AD_Field", parentKey.getAttribute("referenceTable"));
@@ -67,6 +69,7 @@ class MMigrationStepUUIDXmlTest implements UnitTestTag {
 		Element languageKey = (Element) data.item(1);
 		assertEquals("AD_Language", languageKey.getAttribute("Column"));
 		assertEquals("es_MX", languageKey.getTextContent());
+		assertEquals("record-uuid", ((Element)data.item(2)).getTextContent());
 	}
 
 	@Test
@@ -81,6 +84,21 @@ class MMigrationStepUUIDXmlTest implements UnitTestTag {
 		assertEquals("1000001", po.getAttribute("Record_ID"));
 		assertFalse(po.hasAttribute("Record_UUID"));
 		assertTrue(po.getElementsByTagName("Data").getLength() > 0);
+	}
+
+	@Test
+	void usesPreviousUuidToFindAnUpdatedRecord() throws Exception {
+		MColumn column = mock(MColumn.class);
+		when(column.getColumnName()).thenReturn("UUID");
+		MMigrationData datum = mock(MMigrationData.class);
+		when(datum.getAD_Column()).thenReturn(column);
+		when(datum.getOldValue()).thenReturn("previous-uuid");
+		MMigrationStep step = migrationStep("AD_Field", 1000001, "new-uuid", datum);
+		Method getRecordUUID = MMigrationStep.class.getDeclaredMethod("getRecordUUID", boolean.class);
+		getRecordUUID.setAccessible(true);
+
+		assertEquals("previous-uuid", getRecordUUID.invoke(step, true));
+		assertEquals("new-uuid", getRecordUUID.invoke(step, false));
 	}
 
 	private static MMigrationStep migrationStep(String tableName, int recordId,
